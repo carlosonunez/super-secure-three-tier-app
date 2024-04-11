@@ -1,0 +1,71 @@
+---
+volumes:
+  tf-data: {}
+services:
+  terraform:
+    image: hashicorp/terraform:1.7.5
+    volumes:
+      - $PWD/infra:/infra
+      - tf-data:/tf-data
+    working_dir: /infra
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - TERRAFORM_STATE_S3_BUCKET
+      - TERRAFORM_STATE_S3_KEY
+      - TF_DATA_DIR=/tf-data
+      - TF_IN_AUTOMATION="true"
+  terraform-init:
+    depends_on:
+      ensure-logged-into-aws:
+        condition: service_completed_successfully
+      create-tf-state-bucket:
+        condition: service_completed_successfully
+    image: hashicorp/terraform:1.7.5
+    volumes:
+      - $PWD/infra:/infra
+      - tf-data:/tf-data
+    working_dir: /infra
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - TERRAFORM_STATE_S3_BUCKET
+      - TERRAFORM_STATE_S3_KEY
+      - TF_DATA_DIR=/tf-data
+      - TF_IN_AUTOMATION="true"
+    command:
+      - init
+      - -backend-config=bucket=$TERRAFORM_STATE_S3_BUCKET
+      - -backend-config=key=$TERRAFORM_STATE_S3_KEY
+      - -backend-config=region=$AWS_REGION
+  ensure-logged-into-aws:
+    image: amazon/aws-cli:2.2.9
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_DEFAULT_REGION
+      - TERRAFORM_STATE_S3_BUCKET
+    entrypoint: sh
+    command:
+      - -c
+      - "aws sts get-caller-identity &>/dev/null"
+  create-tf-state-bucket:
+    image: amazon/aws-cli:2.2.9
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_DEFAULT_REGION
+      - TERRAFORM_STATE_S3_BUCKET
+    entrypoint: sh
+    command:
+      - -c
+      - |-
+        aws s3 ls s3://$TERRAFORM_STATE_S3_BUCKET || aws s3 mb s3://$TERRAFORM_STATE_S3_BUCKET
