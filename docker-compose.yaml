@@ -20,6 +20,8 @@ services:
       - TF_IN_AUTOMATION="true"
   terraform-init:
     depends_on:
+      ensure-required-env-vars-set:
+        condition: service_completed_successfully
       ensure-logged-into-aws:
         condition: service_completed_successfully
       create-tf-state-bucket:
@@ -35,15 +37,20 @@ services:
       - AWS_SESSION_TOKEN
       - AWS_REGION
       - AWS_DEFAULT_REGION
+      - REINIT
       - TERRAFORM_STATE_S3_BUCKET
       - TERRAFORM_STATE_S3_KEY
       - TF_DATA_DIR=/tf-data
       - TF_IN_AUTOMATION="true"
+    entrypoint: sh
     command:
-      - init
-      - -backend-config=bucket=$TERRAFORM_STATE_S3_BUCKET
-      - -backend-config=key=$TERRAFORM_STATE_S3_KEY
-      - -backend-config=region=$AWS_REGION
+      - -c
+      - |-
+        { test -z "$REINIT" && test -f "/tf-data/.initialized"; } && exit 0
+        terraform init  \
+          -backend-config=bucket=$TERRAFORM_STATE_S3_BUCKET \
+          -backend-config=key=$TERRAFORM_STATE_S3_KEY \
+          -backend-config=region=$AWS_REGION && touch /tf-data/.initialized
   ensure-logged-into-aws:
     image: amazon/aws-cli:2.2.9
     environment:
@@ -69,3 +76,25 @@ services:
       - -c
       - |-
         aws s3 ls s3://$TERRAFORM_STATE_S3_BUCKET || aws s3 mb s3://$TERRAFORM_STATE_S3_BUCKET
+  ensure-required-env-vars-set:
+    image: bash:5
+    environment:
+      - TERRAFORM_STATE_S3_BUCKET
+      - TERRAFORM_STATE_S3_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_DEFAULT_REGION
+    command:
+      - -c
+      - |-
+        for required in TERRAFORM_STATE_S3_BUCKET TERRAFORM_STATE_S3_KEY \
+          AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_DEFAULT_REGION;
+        do \
+          set -x
+          if test -z "$${!required}"
+          then
+            >&2 echo "ERROR: Please define $$required"
+            exit 1
+          fi
+        done

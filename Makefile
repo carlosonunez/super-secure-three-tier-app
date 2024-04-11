@@ -1,24 +1,15 @@
 #!/usr/bin/env make
 MAKEFLAGS += --silent
 SHELL := /usr/bin/env bash
-DOCKER_COMPOSE := $(shell which docker-compose) --progress=quiet --log-level ERROR
+DOCKER_COMPOSE := $(shell which docker-compose) --log-level ERROR --progress=quiet
 
-.PHONY: plan \
-			  _init
+.PHONY: dry-run deploy
 
-plan: _init
-plan:
+dry-run: _init
 	$(DOCKER_COMPOSE) run --rm terraform plan
 
-_init: _verify_tf_state_bucket _verify_tf_state_key
+deploy: _init
+	$(DOCKER_COMPOSE) run --rm terraform apply --auto-approve=true
+
+_init:
 	$(DOCKER_COMPOSE) run --rm terraform-init
-
-_verify_tf_state_bucket:
-	test -n "$$TERRAFORM_STATE_S3_BUCKET" && exit 0; \
-	>&2 echo "ERROR: Please define TERRAFORM_STATE_S3_BUCKET"; \
-	exit 1
-
-_verify_tf_state_key:
-	test -n "$$TERRAFORM_STATE_S3_KEY" && exit 0; \
-	>&2 echo "ERROR: Please define TERRAFORM_STATE_S3_KEY"; \
-	exit 1
