@@ -3,3 +3,4 @@ tags
 .terraform*
 .terraform
 *.tfstate
+.todos

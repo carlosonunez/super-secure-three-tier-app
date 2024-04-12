@@ -30,6 +30,7 @@ resource "aws_iam_role_policy_attachment" "aws_config" {
 
 resource "aws_s3_bucket" "aws_config_recorder" {
   bucket_prefix = random_string.aws_config_recorder_bucket_prefix.result
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_ownership_controls" "aws_config_recorder" {
