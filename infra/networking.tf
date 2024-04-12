@@ -25,10 +25,23 @@ resource "aws_route_table" "wiz_interview_to_internet" {
   }
 }
 
-resource "aws_config_config_rule" "vpc_default_security_group_closed" {
-  name = "vpc-default-security-group-closed"
-  source {
-    owner = "AWS"
-    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+resource "aws_route_table_association" "wiz_interview_public_to_internet" {
+  subnet_id = aws_subnet.wiz_interview_public.id
+  route_table_id = aws_route_table.wiz_interview_to_internet.id
+}
+
+resource "aws_subnet" "wiz_interview_public" {
+  vpc_id = aws_vpc.wiz_interview.id
+  cidr_block = "172.0.1.0/24"
+  tags = {
+    Name = "Wiz Interview Public Subnet"
+  }
+}
+
+resource "aws_subnet" "wiz_interview_private" {
+  vpc_id = aws_vpc.wiz_interview.id
+  cidr_block = "172.0.254.0/24"
+  tags = {
+    Name = "Wiz Interview Private Subnet"
   }
 }

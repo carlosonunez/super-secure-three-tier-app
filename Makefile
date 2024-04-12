@@ -11,5 +11,8 @@ dry-run: _init
 deploy: _init
 	$(DOCKER_COMPOSE) run --rm terraform apply --auto-approve=true
 
+teardown: _init
+	$(DOCKER_COMPOSE) run --rm terraform destroy --auto-approve=true
+
 _init:
 	$(DOCKER_COMPOSE) run --rm terraform-init

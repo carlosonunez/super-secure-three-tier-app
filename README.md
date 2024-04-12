@@ -23,13 +23,23 @@ This will start the application and its database.
 
 > 💸 **MONEY WARNING**: This will cost you ~USD $0.50/hr.
 
-1. Copy `.env.example` to `.env`. Fill in anything that says
-   `change_me`.
+1. `export` the following values into your environment:
 
-2. Deploy the app:
+- `TERRAFORM_STATE_S3_BUCKET`: The name of the bucket to store Terraform state
+  into.
+- `TERRAFORM_STATE_S3_KEY`: The name of the key within the bucket above to store
+  state into.
+
+2. Log into AWS and ensure the following environment variables are exported:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN` (if using AWS STS)
+
+3. Deploy the app:
 
 ```sh
-docker-compose run --rm deploy-app
+make deploy
 ```
 
 This will use Terraform to create the following resources

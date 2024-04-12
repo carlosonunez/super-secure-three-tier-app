@@ -109,3 +109,41 @@ resource "aws_config_configuration_aggregator" "aws_config" {
     regions = [ data.aws_region.current.name ]
   }
 }
+
+resource "aws_config_config_rule" "vpc_default_security_group_closed" {
+  name = "vpc-default-security-group-closed"
+  source {
+    owner = "AWS"
+    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+  }
+}
+
+resource "aws_config_config_rule" "authorized-open-ports" {
+  name = "authorized-open-ports"
+  source {
+    owner = "AWS"
+    source_identifier = "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
+  }
+  input_parameters = <<PARAMS
+{
+  "authorizedTcpPorts": "22,80,443,5432"
+}
+PARAMS
+}
+
+# Security Flaw: The assignment has us configure a database inside of a public subnet.
+# The database is usually the thing we want to isolate the _most_.
+# This config rule would catch this.
+resource "aws_config_config_rule" "ec2-no-public-ips" {
+  name = "ec2-no-public-ips"
+  source {
+    owner = "AWS"
+    source_identifier = "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
+  }
+  input_parameters = <<PARAMS
+{
+  "authorizedTcpPorts": "22,80,443,5432"
+}
+PARAMS
+}
+
