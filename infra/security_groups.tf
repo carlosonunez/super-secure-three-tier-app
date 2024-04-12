@@ -55,3 +55,17 @@ resource "aws_vpc_security_group_ingress_rule" "wiz_interview_web_allow_all_with
   ip_protocol = "-1"
   referenced_security_group_id = aws_security_group.wiz_interview_web.id
 }
+
+resource "aws_config_config_rule" "authorized-open-ports" {
+  name = "authorized-open-ports"
+  source {
+    owner = "AWS"
+    source_identifier = "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
+  }
+  input_parameters = <<PARAMS
+{
+  "authorizedTcpPorts": "22,80,443,5432"
+}
+PARAMS
+}
+

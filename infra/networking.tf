@@ -45,3 +45,25 @@ resource "aws_subnet" "wiz_interview_private" {
     Name = "Wiz Interview Private Subnet"
   }
 }
+
+resource "aws_config_config_rule" "vpc_default_security_group_closed" {
+  name = "vpc-default-security-group-closed"
+  source {
+    owner = "AWS"
+    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+  }
+}
+
+resource "aws_config_config_rule" "ec2-no-public-ips" {
+  name = "ec2-no-public-ips"
+  source {
+    owner = "AWS"
+    source_identifier = "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
+  }
+  input_parameters = <<PARAMS
+{
+  "authorizedTcpPorts": "22,80,443,5432"
+}
+PARAMS
+}
+
