@@ -1,6 +1,7 @@
 ---
 volumes:
   tf-data: {}
+  infra-secrets: {}
 services:
   terraform:
     image: hashicorp/terraform:1.7.5
@@ -18,6 +19,23 @@ services:
       - TERRAFORM_STATE_S3_KEY
       - TF_DATA_DIR=/tf-data
       - TF_IN_AUTOMATION="true"
+  test-infra:
+    build:
+      dockerfile: bats.Dockerfile
+      context: .
+    environment:
+      - DB_HOST
+      - DB_USER
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+    volumes:
+      - infra-secrets:/secrets
+      - $PWD/tests:/tests
+    command:
+      - /tests
   terraform-init:
     depends_on:
       ensure-required-env-vars-set:
@@ -98,3 +116,29 @@ services:
             exit 1
           fi
         done
+  write-infra-secrets:
+    image: hashicorp/terraform:1.7.5
+    volumes:
+      - $PWD/infra:/infra
+      - tf-data:/tf-data
+      - infra-secrets:/secrets
+    working_dir: /infra
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - TERRAFORM_STATE_S3_BUCKET
+      - TERRAFORM_STATE_S3_KEY
+      - TF_DATA_DIR=/tf-data
+      - TF_IN_AUTOMATION="true"
+    entrypoint: sh
+    command:
+      - -c
+      - |-
+        terraform output -raw wiz_interview_db_ssh_private_key > /secrets/db_key && chmod 600 /secrets/db_key &&
+        terraform output -raw wiz_interview_db_dns_record > /secrets/db_host &&
+        terraform output -raw wiz_interview_db_login_user > /secrets/db_user &&
+        terraform output -raw wiz_interview_db_db_user > /secrets/db_db_user &&
+        terraform output -raw wiz_interview_db_db_password > /secrets/db_db_password
