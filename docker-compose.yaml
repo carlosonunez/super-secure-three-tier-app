@@ -42,6 +42,7 @@ services:
           -e login_user=$(cat /secrets/db_user) \
           -e db_user=$(cat /secrets/db_db_user) \
           -e db_password=$(cat /secrets/db_db_password) \
+          -e db_name=$(cat /secrets/db_name) \
           --private-key /secrets/db_key \
           --extra-vars @/config/vars.yaml \
           /config/database.yml
@@ -167,6 +168,7 @@ services:
         terraform output -raw wiz_interview_db_dns_record > /secrets/db_host &&
         terraform output -raw wiz_interview_db_login_user > /secrets/db_user &&
         terraform output -raw wiz_interview_db_db_user > /secrets/db_db_user &&
+        terraform output -raw wiz_interview_db_name > /secrets/db_name &&
         terraform output -raw wiz_interview_db_db_password > /secrets/db_db_password
   delete-infra-secrets:
     image: bash:5

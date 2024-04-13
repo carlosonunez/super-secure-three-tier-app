@@ -47,6 +47,6 @@ teardown() {
 }
 
 @test "Configure the database with authentication" {
-run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) "psql postgresql://$(cat /secrets/db_db_user):$(cat /secrets/db_db_password)@localhost:5432 -c 'select now();'"
+  run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) "psql postgresql://$(cat /secrets/db_db_user):$(cat /secrets/db_db_password)@localhost/$(cat /secrets/db_name) -c 'select now();'"
   [ "$status" -eq 0 ]
 }

@@ -18,3 +18,7 @@ output "wiz_interview_db_db_user" {
 output "wiz_interview_db_db_password" {
   value = random_string.db_password.result
 }
+
+output "wiz_interview_db_name" {
+  value = random_string.db_name.result
+}

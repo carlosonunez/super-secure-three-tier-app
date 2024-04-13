@@ -5,10 +5,15 @@
   gather_facts: false
   remote_user: "{{ login_user }}"
   tasks:
-    - name: Install PostgreSQL
+    - name: Install PostgreSQL and acl (so that Ansible can configure a db user)
       become: true
-      package:
-        name: "postgresql-{{ postgres_version }}"
+      apt:
+        update_cache: true
+        name:
+          - "postgresql-{{ postgres_version }}"
+          - libpq-dev
+          - python3-dev
+          - python3-psycopg2
         state: present
 
     - name: Allow connectivity on all interfaces
@@ -20,12 +25,20 @@
         state: present
 
     - name: Set password for postgres user
-      become_method: sudo
+      become: true
       become_user: postgres
       command: psql -c "ALTER USER postgres PASSWORD '{{ db_password }}'"
 
     - name: Create user
-      become_method: sudo
+      become: true
       become_user: postgres
-      command: |-
-        psql -c "CREATE USER {{ db_user }} WITH PASSWORD '{{ db_password }}' CREATEDB;"
+      postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+
+    - name: Create app database
+      become: true
+      become_user: postgres
+      postgresql_db:
+        owner: "{{ db_user }}"
+        name: "{{ db_name }}"

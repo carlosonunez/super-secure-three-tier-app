@@ -12,9 +12,16 @@ resource "random_string" "db_password" {
   length = 32
 }
 
+resource "random_string" "db_name" {
+  special = false
+  length = 16
+  numeric = false
+}
+
 resource "random_string" "db_user" {
   special = false
   upper = false
+  numeric = false
   length = 16
 }
 
