@@ -161,6 +161,7 @@ services:
       - TF_DATA_DIR=/tf-data
       - TF_IN_AUTOMATION="true"
     entrypoint: sh
+    # TODO: DRY this up.
     command:
       - -c
       - |-
@@ -169,7 +170,11 @@ services:
         terraform output -raw wiz_interview_db_login_user > /secrets/db_user &&
         terraform output -raw wiz_interview_db_db_user > /secrets/db_db_user &&
         terraform output -raw wiz_interview_db_name > /secrets/db_name &&
-        terraform output -raw wiz_interview_db_db_password > /secrets/db_db_password
+        terraform output -raw wiz_interview_db_db_password > /secrets/db_db_password &&
+        terraform output -raw wiz_interview_test_machine_ssh_private_key > /secrets/test_machine_key && chmod 600 /secrets/test_machine_key &&
+        terraform output -raw wiz_interview_test_machine_dns_record > /secrets/test_machine_host &&
+        terraform output -raw wiz_interview_test_machine_login_user > /secrets/test_machine_user &&
+        terraform output -raw wiz_interview_test_machine_private_ip > /secrets/test_machine_private_ip
   delete-infra-secrets:
     image: bash:5
     volumes:

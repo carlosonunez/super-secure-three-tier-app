@@ -22,3 +22,21 @@ output "wiz_interview_db_db_password" {
 output "wiz_interview_db_name" {
   value = random_string.db_name.result
 }
+
+output "wiz_interview_test_machine_dns_record" {
+  value = module.wiz-interview-test-machine.public_dns
+}
+
+output "wiz_interview_test_machine_private_ip" {
+  value = module.wiz-interview-test-machine.private_ip
+}
+
+output "wiz_interview_test_machine_ssh_private_key" {
+  value = tls_private_key.wiz_interview_test_machine.private_key_openssh
+  sensitive = true
+}
+
+output "wiz_interview_test_machine_login_user" {
+  value = "ubuntu"
+}
+

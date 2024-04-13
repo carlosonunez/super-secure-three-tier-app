@@ -50,3 +50,13 @@ teardown() {
   run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) "psql postgresql://$(cat /secrets/db_db_user):$(cat /secrets/db_db_password)@localhost/$(cat /secrets/db_name) -c 'select now();'"
   [ "$status" -eq 0 ]
 }
+
+# Doesn't necessarily have to be from our database instance...
+@test "Allow DB traffic to originate only from your VPC" {
+  # So start a service pretending to be a database on a test machine...
+  run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/test_machine_key $(cat /secrets/test_machine_user)@$(cat /secrets/test_machine_host) 'pkill -i -9 nc; nohup nc -l 0.0.0.0 5432 > /dev/null 2>&1 &'
+  [ "$status" -eq 0 ]
+  # ...and see if we can connect to it from our real database (or anywhere else within the VPC)
+  run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) 'nc -w 3 -z '"$(cat /secrets/test_machine_private_ip)"' 5432'
+  [ "$status" -eq 0 ]
+}
