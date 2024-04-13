@@ -11,11 +11,14 @@ export POSTGRES_VERSION
 dry-run: _init
 	$(DOCKER_COMPOSE) run --rm terraform plan
 
-deploy: _init
-	$(DOCKER_COMPOSE) run --rm terraform apply --auto-approve=true && \
-	$(DOCKER_COMPOSE) run --rm write-infra-secrets && \
+deploy:
+	$(MAKE) deploy_infra && \
 	$(MAKE) configure && \
 	$(MAKE) test
+
+deploy-infra: _init
+	$(DOCKER_COMPOSE) run --rm terraform apply --auto-approve=true && \
+	$(DOCKER_COMPOSE) run --rm write-infra-secrets
 
 configure: _configure_db
 
