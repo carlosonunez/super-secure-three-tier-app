@@ -51,6 +51,20 @@ resource "aws_iam_policy" "wiz_interview_db_policy" {
   })
 }
 
+data "aws_iam_policy_document" "wiz-interview-db-backup-bucket" {
+  statement {
+    effect = "Allow"
+    actions = [ "s3:GetObject" ]
+    resources = [
+      "${module.wiz-interview-db-backup-bucket.s3_bucket_arn}/*"
+    ]
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+  }
+}
+
 module "wiz-interview-db-backup-bucket" {
   source = "terraform-aws-modules/s3-bucket/aws"
   version = "4.1.1"
@@ -60,6 +74,14 @@ module "wiz-interview-db-backup-bucket" {
   versioning = {
     enabled = true
   }
+  # I wouldn't typically do this, but...
+  block_public_acls = false
+  block_public_policy = false
+  ignore_public_acls = false
+  restrict_public_buckets = false
+  acl = "public-read"
+  attach_policy = true
+  policy = data.aws_iam_policy_document.wiz-interview-db-backup-bucket.json
 }
 
 

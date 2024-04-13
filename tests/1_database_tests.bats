@@ -73,3 +73,12 @@ teardown() {
   run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) 'set -x; sudo crontab -l | grep -Eq "^0 \* \* \* \* /usr/local/bin/backup_database.sh$"'
   [ "$status" -eq 0 ]
 }
+
+@test "Configure your bucket such that the public can read and download objects from it" {
+  run echo 'hello' > /tmp/test_file
+  [ "$status" -eq 0 ]
+  run aws s3 cp /tmp/test_file s3://$(cat /secrets/db_backup_bucket)/test_file
+  [ "$status" -eq 0 ]
+  run curl -o /dev/null -w '%{http_code}' -sS https://$(cat /secrets/db_backup_bucket).s3.$AWS_DEFAULT_REGION.amazonaws.com/test_file
+  [ "$output" -eq 200 ]
+}
