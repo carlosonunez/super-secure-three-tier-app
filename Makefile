@@ -23,7 +23,8 @@ test:
 	$(DOCKER_COMPOSE) run --rm test-infra
 
 teardown: _init
-	$(DOCKER_COMPOSE) run --rm terraform destroy --auto-approve=true
+	$(DOCKER_COMPOSE) run --rm terraform destroy && \
+	$(DOCKER_COMPOSE) run --rm delete-infra-secrets
 
 _init:
 	$(DOCKER_COMPOSE) run --rm terraform-init

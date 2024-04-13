@@ -168,3 +168,23 @@ services:
         terraform output -raw wiz_interview_db_login_user > /secrets/db_user &&
         terraform output -raw wiz_interview_db_db_user > /secrets/db_db_user &&
         terraform output -raw wiz_interview_db_db_password > /secrets/db_db_password
+  delete-infra-secrets:
+    image: bash:5
+    volumes:
+      - infra-secrets:/secrets
+    command:
+      - -c
+      - rm -f /secrets/*
+  ssh-into-db:
+    build:
+      dockerfile: ansible.Dockerfile
+      context: .
+    volumes:
+      - infra-secrets:/secrets
+    entrypoint: sh
+    command:
+      - -c
+      - |-
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+          -i /secrets/db_key \
+          $(cat /secrets/db_user)@$(cat /secrets/db_host)
