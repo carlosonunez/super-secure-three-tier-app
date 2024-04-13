@@ -1,0 +1,31 @@
+---
+# Tasks shamelessly stolen from: https://gist.github.com/greenhat/11785194cbdc90624b67
+- name: Configure database
+  hosts: all
+  gather_facts: false
+  remote_user: "{{ login_user }}"
+  tasks:
+    - name: Install PostgreSQL
+      become: true
+      package:
+        name: "postgresql-{{ postgres_version }}"
+        state: present
+
+    - name: Allow connectivity on all interfaces
+      become: true
+      lineinfile:
+        dest: /etc/postgresql/{{ postgres_version }}/main/postgresql.conf
+        regexp: "listen_addresses ="
+        line: "listen_addresses = '*'"
+        state: present
+
+    - name: Set password for postgres user
+      become_method: sudo
+      become_user: postgres
+      command: psql -c "ALTER USER postgres PASSWORD '{{ db_password }}'"
+
+    - name: Create user
+      become_method: sudo
+      become_user: postgres
+      command: |-
+        psql -c "CREATE USER {{ db_user }} WITH PASSWORD '{{ db_password }}' CREATEDB;"

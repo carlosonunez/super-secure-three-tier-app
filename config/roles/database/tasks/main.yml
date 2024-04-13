@@ -1,3 +1,0 @@
----
-- name: Confirm working
-  command: whoami

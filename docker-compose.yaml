@@ -19,6 +19,32 @@ services:
       - TERRAFORM_STATE_S3_KEY
       - TF_DATA_DIR=/tf-data
       - TF_IN_AUTOMATION="true"
+  configure-database:
+    build:
+      dockerfile: ansible.Dockerfile
+      context: .
+    volumes:
+      - infra-secrets:/secrets
+      - $PWD/config:/config
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=false
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - POSTGRES_VERSION
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        ansible-playbook -i $(cat /secrets/db_host), \
+          -e login_user=$(cat /secrets/db_user) \
+          -e db_user=$(cat /secrets/db_db_user) \
+          -e db_password=$(cat /secrets/db_db_password) \
+          --private-key /secrets/db_key \
+          --extra-vars @/config/vars.yaml \
+          /config/database.yml
   test-infra:
     build:
       dockerfile: bats.Dockerfile
