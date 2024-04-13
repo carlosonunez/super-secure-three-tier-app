@@ -35,9 +35,31 @@ resource "aws_iam_policy" "wiz_interview_db_policy" {
         Effect = "Allow"
         Resource = "arn:aws:ec2::*"
         Action = [ "ec2:*" ]
+      },
+      {
+        Effect = "Allow"
+        Resource = "${module.wiz-interview-db-backup-bucket.s3_bucket_arn}/*"
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectAcl",
+          "s3:ListObjects",
+          "s3:PutObject",
+          "s3:PutObjectAcl"
+        ]
       }
     ]
   })
+}
+
+module "wiz-interview-db-backup-bucket" {
+  source = "terraform-aws-modules/s3-bucket/aws"
+  version = "4.1.1"
+  bucket_prefix = "wiz-interview-db-backups"
+  control_object_ownership = true
+  object_ownership = "ObjectWriter"
+  versioning = {
+    enabled = true
+  }
 }
 
 

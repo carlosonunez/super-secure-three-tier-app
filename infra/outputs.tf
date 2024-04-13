@@ -40,3 +40,6 @@ output "wiz_interview_test_machine_login_user" {
   value = "ubuntu"
 }
 
+output "wiz_interview_db_backup_bucket" {
+  value = module.wiz-interview-db-backup-bucket.s3_bucket_id
+}

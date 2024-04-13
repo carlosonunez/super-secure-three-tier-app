@@ -60,3 +60,16 @@ teardown() {
   run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) 'nc -w 3 -z '"$(cat /secrets/test_machine_private_ip)"' 5432'
   [ "$status" -eq 0 ]
 }
+
+@test "Database instance should have a script that backs up to an S3 bucket" {
+  previous_num_backups=$(aws s3 ls s3://$(cat /secrets/db_backup_bucket) | wc -l)
+  run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) '/usr/local/bin/backup_database.sh'
+  [ "$status" -eq 0 ]
+  curr_num_backups=$(aws s3 ls s3://$(cat /secrets/db_backup_bucket) | wc -l)
+  [ "$curr_num_backups" -eq "$((previous_num_backups+1))" ]
+}
+
+@test "Configure the DB to regularly & automatically backup to your exercise S3 Bucket" {
+  run ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -i /secrets/db_key $(cat /secrets/db_user)@$(cat /secrets/db_host) 'set -x; sudo crontab -l | grep -Eq "^0 \* \* \* \* /usr/local/bin/backup_database.sh$"'
+  [ "$status" -eq 0 ]
+}

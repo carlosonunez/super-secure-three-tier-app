@@ -43,6 +43,7 @@ services:
           -e db_user=$(cat /secrets/db_db_user) \
           -e db_password=$(cat /secrets/db_db_password) \
           -e db_name=$(cat /secrets/db_name) \
+          -e db_backup_bucket_name=$(cat /secrets/db_backup_bucket) \
           --private-key /secrets/db_key \
           --extra-vars @/config/vars.yaml \
           /config/database.yml
@@ -171,6 +172,7 @@ services:
         terraform output -raw wiz_interview_db_db_user > /secrets/db_db_user &&
         terraform output -raw wiz_interview_db_name > /secrets/db_name &&
         terraform output -raw wiz_interview_db_db_password > /secrets/db_db_password &&
+        terraform output -raw wiz_interview_db_backup_bucket > /secrets/db_backup_bucket &&
         terraform output -raw wiz_interview_test_machine_ssh_private_key > /secrets/test_machine_key && chmod 600 /secrets/test_machine_key &&
         terraform output -raw wiz_interview_test_machine_dns_record > /secrets/test_machine_host &&
         terraform output -raw wiz_interview_test_machine_login_user > /secrets/test_machine_user &&

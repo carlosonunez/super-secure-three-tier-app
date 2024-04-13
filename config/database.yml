@@ -14,7 +14,12 @@
           - libpq-dev
           - python3-dev
           - python3-psycopg2
+          - python3-pip
         state: present
+
+    - name: Install AWS CLI
+      pip:
+        name: awscli
 
     - name: Allow connectivity on all interfaces
       become: true
@@ -42,3 +47,23 @@
       postgresql_db:
         owner: "{{ db_user }}"
         name: "{{ db_name }}"
+
+    - name: Create backup script
+      become: true
+      copy:
+        dest: /usr/local/bin/backup_database.sh
+        mode: 0755
+        owner: "{{ login_user }}"
+        content: |-
+          #!/usr/bin/env bash
+          set -euo pipefail
+          fname="/tmp/db-$(date +%s).backup"
+          sudo -u postgres pg_dumpall > "$fname"
+          /home/{{ login_user }}/.local/bin/aws s3 cp "$fname" s3://{{ db_backup_bucket_name }}
+
+    - name: Create a cron job for the backup script
+      become: true
+      cron:
+        minute: 0
+        name: Backup database
+        job: /usr/local/bin/backup_database.sh
