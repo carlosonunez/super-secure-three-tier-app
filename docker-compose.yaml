@@ -148,8 +148,26 @@ services:
             exit 1
           fi
         done
+  refresh-eks-kubeconfig:
+    image: amazon/aws-cli:2.2.9
+    volumes:
+      - infra-secrets:/secrets
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_DEFAULT_REGION
+    entrypoint: sh
+    command:
+      - -c
+      - |-
+        aws eks update-kubeconfig --name $(cat /secrets/eks_cluster_name) &&
+        sed -i 's/v1alpha1/v1beta1/' ~/.kube/config &&
+        cp ~/.kube/config /secrets/kubeconfig
   write-infra-secrets:
-    image: hashicorp/terraform:1.7.5
+    build:
+      dockerfile: terraform.Dockerfile
+      context: .
     volumes:
       - $PWD/infra:/infra
       - tf-data:/tf-data

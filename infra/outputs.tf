@@ -43,3 +43,11 @@ output "wiz_interview_test_machine_login_user" {
 output "wiz_interview_db_backup_bucket" {
   value = module.wiz-interview-db-backup-bucket.s3_bucket_id
 }
+
+output "wiz_interview_eks_cluster_name" {
+  value = module.wiz-interview-eks-cluster.cluster_name
+}
+
+output "wiz_interview_eks_cluster_autoscaler_role_arn" {
+  value = module.wiz-interview-eks-cluster-autoscaler-role.iam_role_arn
+}

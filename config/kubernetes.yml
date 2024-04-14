@@ -1,0 +1,26 @@
+---
+- name: Configure Kubernetes cluster
+  connection: local
+  hosts: all
+  gather_facts: false
+  collections:
+    - kubernetes.core
+  tasks:
+    - name: Confirm cluster reachable
+      k8s_info:
+        kind: Node
+
+    - name: Retrieve Cluster Autoscaler YAML
+      get_url:
+        url: https://raw.githubusercontent.com/kubernetes/autoscaler/cluster-autoscaler-1.29.0/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+        dest: /extras/autoscaler.yaml
+
+    - name: Install Cluster Autoscaler
+      k8s:
+        state: present
+        src: /extras/autoscaler.yaml
+
+    # I kept getting HTTP 422 UNPROCESSABLE_ENTITY errors when trying to use the k8s module
+    # to do this "the Ansible way".
+    - name: Apply IRSA role for Cluster Autoscaler
+      command: kubectl -n kube-system annotate sa cluster-autoscaler "eks.amazonaws.com/role-arn={{ cluster_autoscaler_role_arn }}"
