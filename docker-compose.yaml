@@ -2,9 +2,12 @@
 volumes:
   tf-data: {}
   infra-secrets: {}
+  infra-extra-files: {}
 services:
   terraform:
-    image: hashicorp/terraform:1.7.5
+    build:
+      dockerfile: terraform.Dockerfile
+      context: .
     volumes:
       - $PWD/infra:/infra
       - tf-data:/tf-data
