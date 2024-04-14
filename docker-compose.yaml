@@ -188,17 +188,21 @@ services:
     command:
       - -c
       - |-
-        terraform output -raw wiz_interview_db_ssh_private_key > /secrets/db_key && chmod 600 /secrets/db_key &&
-        terraform output -raw wiz_interview_db_dns_record > /secrets/db_host &&
-        terraform output -raw wiz_interview_db_login_user > /secrets/db_user &&
-        terraform output -raw wiz_interview_db_db_user > /secrets/db_db_user &&
-        terraform output -raw wiz_interview_db_name > /secrets/db_name &&
-        terraform output -raw wiz_interview_db_db_password > /secrets/db_db_password &&
-        terraform output -raw wiz_interview_db_backup_bucket > /secrets/db_backup_bucket &&
-        terraform output -raw wiz_interview_test_machine_ssh_private_key > /secrets/test_machine_key && chmod 600 /secrets/test_machine_key &&
-        terraform output -raw wiz_interview_test_machine_dns_record > /secrets/test_machine_host &&
-        terraform output -raw wiz_interview_test_machine_login_user > /secrets/test_machine_user &&
-        terraform output -raw wiz_interview_test_machine_private_ip > /secrets/test_machine_private_ip
+        set -x
+        json=$(terraform output -json)
+        echo "$$json" | jq -r '.wiz_interview_db_ssh_private_key.value' >  /secrets/db_key && chmod 600 /secrets/db_key &&
+        echo "$$json" | jq -r '.wiz_interview_db_dns_record.value' >  /secrets/db_host &&
+        echo "$$json" | jq -r '.wiz_interview_db_login_user.value' >  /secrets/db_user &&
+        echo "$$json" | jq -r '.wiz_interview_db_db_user.value' >  /secrets/db_db_user &&
+        echo "$$json" | jq -r '.wiz_interview_db_name.value' >  /secrets/db_name &&
+        echo "$$json" | jq -r '.wiz_interview_db_db_password.value' >  /secrets/db_db_password &&
+        echo "$$json" | jq -r '.wiz_interview_db_backup_bucket.value' >  /secrets/db_backup_bucket &&
+        echo "$$json" | jq -r '.wiz_interview_test_machine_ssh_private_key.value' >  /secrets/test_machine_key && chmod 600 /secrets/test_machine_key &&
+        echo "$$json" | jq -r '.wiz_interview_test_machine_dns_record.value' >  /secrets/test_machine_host &&
+        echo "$$json" | jq -r '.wiz_interview_test_machine_login_user.value' >  /secrets/test_machine_user &&
+        echo "$$json" | jq -r '.wiz_interview_test_machine_private_ip.value' >  /secrets/test_machine_private_ip &&
+        echo "$$json" | jq -r '.wiz_interview_eks_cluster_name.value' >  /secrets/eks_cluster_name &&
+        echo "$$json" | jq -r '.wiz_interview_eks_cluster_autoscaler_role_arn.value' >  /secrets/cluster_autoscaler_role_arn
   delete-infra-secrets:
     image: bash:5
     volumes:
