@@ -12,7 +12,7 @@ dry-run: _init
 	$(DOCKER_COMPOSE) run --rm terraform plan
 
 deploy:
-	$(MAKE) deploy_infra && \
+	$(MAKE) deploy-infra && \
 	$(MAKE) configure && \
 	$(MAKE) test
 

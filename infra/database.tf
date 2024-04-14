@@ -74,6 +74,7 @@ module "wiz-interview-db-backup-bucket" {
   versioning = {
     enabled = true
   }
+  force_destroy = true
   # I wouldn't typically do this, but...
   block_public_acls = false
   block_public_policy = false
