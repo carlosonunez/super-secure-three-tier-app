@@ -1,0 +1,3 @@
+---
+- import_playbook: /config/database.yml
+- import_playbook: /config/kubernetes.yml

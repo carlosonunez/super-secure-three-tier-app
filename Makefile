@@ -18,9 +18,11 @@ deploy:
 
 deploy-infra: _init
 	$(DOCKER_COMPOSE) run --rm terraform apply --auto-approve=true && \
-	$(DOCKER_COMPOSE) run --rm write-infra-secrets
+	$(DOCKER_COMPOSE) run --rm write-infra-secrets && \
+	$(DOCKER_COMPOSE) run --rm refresh-eks-kubeconfig
 
-configure: _configure_db
+configure:
+	$(DOCKER_COMPOSE) run --rm configure-infra
 
 test:
 	$(DOCKER_COMPOSE) run --rm test-infra
@@ -31,6 +33,3 @@ teardown: _init
 
 _init:
 	$(DOCKER_COMPOSE) run --rm terraform-init
-
-_configure_db:
-	$(DOCKER_COMPOSE) run --rm configure-database
