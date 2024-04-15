@@ -23,6 +23,9 @@ services:
       - TF_DATA_DIR=/tf-data
       - TF_IN_AUTOMATION="true"
   configure-infra:
+    depends_on:
+      refresh-eks-kubeconfig:
+        condition: service_completed_successfully
     build:
       dockerfile: ansible.Dockerfile
       context: .
