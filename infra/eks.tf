@@ -3,14 +3,6 @@ module "wiz-interview-eks-sg" {
   version = "5.1.0"
   name = "wiz-interview-eks-sg"
   vpc_id = module.wiz-interview-vpc.vpc_id
-  ingress_with_source_security_group_id = [
-    {
-      from_port = 5432
-      to_port = 5432
-      protocol = "tcp"
-      source_security_group_id = module.wiz-interview-db-sg.security_group_id
-    }
-  ]
   ingress_with_self = [
     {
       from_port = -1
@@ -72,6 +64,9 @@ module "wiz-interview-eks-cluster" {
       ami_type = "AL2_ARM_64"
     }
   }
+  cluster_additional_security_group_ids = [
+    module.wiz-interview-eks-sg.security_group_id
+  ]
 }
 
 module "wiz-interview-eks-cluster-auth" {

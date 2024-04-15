@@ -96,7 +96,7 @@ module "wiz-interview-db-sg" {
       from_port = 5432
       to_port = 5432
       protocol = "tcp"
-      source_security_group_id = module.wiz-interview-eks-sg.security_group_id
+      source_security_group_id = module.wiz-interview-eks-cluster.node_security_group_id
     }
   ]
   ingress_with_cidr_blocks = [

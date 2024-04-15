@@ -27,7 +27,7 @@ module "wiz-interview-test-machine" {
 # - https://github.com/terraform-aws-modules/terraform-aws-ec2-instance/issues/243
 # - https://github.com/hashicorp/terraform/issues/3263
 resource "aws_ec2_tag" "wiz_interview_test_machine" {
-  resource_id = module.wiz-interview-db.spot_instance_id
+  resource_id = module.wiz-interview-test-machine.spot_instance_id
   key = "Name"
   value = "wiz-interview-test-machine"
 }
