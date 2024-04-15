@@ -55,7 +55,8 @@ This will also use Ansible to:
 - Deploy the application and its related resources into EKS
 
 Finally, it will use [BATS](https://bats-core.readthedocs.io) to test that
-requirements have been met.
+requirements have been met. Run `make test` with the environment
+variables above set to run the test suite yourself.
 
 ## Troubleshooting
 
