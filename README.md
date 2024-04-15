@@ -20,7 +20,8 @@ This will start the application and its database.
 
 ## Deploying Into AWS
 
-> 💸 **MONEY WARNING**: This will cost you ~USD $0.50/hr.
+> 💸 **MONEY WARNING**: This will cost you ~USD $0.33/hr if run during business
+> hours, or ~USD $0.11/hr if you disable AWS Config.
 
 1. `export` the following values into your environment:
 
