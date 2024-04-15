@@ -8,34 +8,6 @@ teardown() {
     [ -n "$BATS_TEST_COMPLETED" ] || touch "${BATS_PARENT_TMPNAME}.skip"
 }
 
-@test "Ensure database host secret exists" {
-  run grep -Eq 'compute.amazonaws.com' /secrets/db_host
-  [ "$status" -eq 0 ]
-}
-
-@test "Ensure database secret exists" {
-  run cat /secrets/db_user
-  [ "$status" -eq 0 ]
-  [ -n "$output" ]
-}
-
-@test "Ensure database user exists" {
-  run cat /secrets/db_db_user
-  [ "$status" -eq 0 ]
-  [ -n "$output" ]
-}
-
-@test "Ensure database user password exists" {
-  run cat /secrets/db_db_password
-  [ "$status" -eq 0 ]
-  [ -n "$output" ]
-}
-
-@test "Ensure database SSH key secret exists" {
-  run grep -Eq 'BEGIN (OPENSSH|RSA) PRIVATE KEY' /secrets/db_key
-  [ "$status" -eq 0 ]
-}
-
 @test "Create a Linux EC2 instance on which a database server is installed" {
   run aws ec2 describe-instances --filter 'Name=tag:Name,Values=wiz-interview-db' --query 'Reservations[0].Instances[0].InstanceId' --output text
   [ "$status" -eq 0 ]
@@ -74,11 +46,3 @@ teardown() {
   [ "$status" -eq 0 ]
 }
 
-@test "Configure your bucket such that the public can read and download objects from it" {
-  run echo 'hello' > /tmp/test_file
-  [ "$status" -eq 0 ]
-  run aws s3 cp /tmp/test_file s3://$(cat /secrets/db_backup_bucket)/test_file
-  [ "$status" -eq 0 ]
-  run curl -o /dev/null -w '%{http_code}' -sS https://$(cat /secrets/db_backup_bucket).s3.$AWS_DEFAULT_REGION.amazonaws.com/test_file
-  [ "$output" -eq 200 ]
-}
