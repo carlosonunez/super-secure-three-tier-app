@@ -51,3 +51,14 @@ output "wiz_interview_eks_cluster_name" {
 output "wiz_interview_eks_cluster_autoscaler_role_arn" {
   value = module.wiz-interview-eks-cluster-autoscaler-role.iam_role_arn
 }
+
+output "wiz_interview_ecr_repository_host" {
+  value = module.wiz-interview-ecr-repo.repository_url
+}
+output "wiz_interview_ecr_repository_username" {
+  value = data.aws_ecr_authorization_token.token.user_name
+}
+output "wiz_interview_ecr_repository_password" {
+  value = data.aws_ecr_authorization_token.token.password
+  sensitive = true
+}

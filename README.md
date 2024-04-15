@@ -13,9 +13,8 @@ Don't poke around trying to find any either.
 
 ## Running It Locally
 
-```sh
-docker-compose up -d app
-```
+[Go here](https://github.com/carlosonunez/tasky) to run our example web app
+locally.
 
 This will start the application and its database.
 

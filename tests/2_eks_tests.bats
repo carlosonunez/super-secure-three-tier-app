@@ -18,11 +18,27 @@ teardown() {
 }
 
 @test "Build and host a container image for your web application" {
-  run docker run --rm  -d -p 8080:80 "$(cat /secrets/ecr_repository_host)/web-app:v1"
-  [ "$output" -eq 0 ]
-  run curl -sS -o /tmp/page -w '%{http_code}' http://localhost:18080
+  docker rm -f tasky || true
+  run docker run -e MONGODB_URI=mongodb://foo --rm --name tasky -d -p 8080:8080 "$(cat /secrets/ecr_repository_host)"
+  [ "$status" -eq 0 ]
+  run nc -w 5 -z host.docker.internal 8080
+  [ "$status" -eq 0 ]
+  run curl -sS -o /tmp/page -w '%{http_code}' http://host.docker.internal:8080
   [ "$output" -eq 200 ]
   run grep -Eq '<title>Tasky</title>' /tmp/page
   [ "$status" -eq 0 ]
+  run docker rm -f tasky
+}
 
+@test "Ensure your built container image contains an arbitrary file called “wizexercise.txt” with some content" {
+  run docker run -e MONGODB_URI=mongodb://foo --rm --name tasky -d -p 8080:8080 "$(cat /secrets/ecr_repository_host)"
+  [ "$status" -eq 0 ]
+  run docker exec tasky stat /wizexercise.txt
+  [ "$status" -eq 0 ]
+}
+
+@test "Deploy your container-based web application to the EKS cluster" {
+  run kubectl --kubeconfig /secrets/kubeconfig get pod --no-headers=true -l app=tasky -o name --field-selector=status.phase==Running
+  [ "$status" -eq 0 ]
+  [ -n "$output" ]
 }

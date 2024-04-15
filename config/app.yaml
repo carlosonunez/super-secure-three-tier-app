@@ -1,0 +1,46 @@
+---
+- name: Deploy tasky
+  connection: local
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - kubernetes.core
+  tasks:
+    - name: Log into ECR
+      command: docker login "{{ ecr_repository_host }}" -u "{{ ecr_repository_username }}" -p "{{ ecr_repository_password }}"
+    - name: Retrieve Tasky
+      git:
+        force: yes
+        repo: "{{ tasky_repo }}"
+        dest: /extras/tasky
+        version: "{{ tasky_version }}"
+    - name: Get Tasky SHA
+      command: git -C /extras/tasky rev-parse HEAD
+      register: tasky_sha
+    - name: Inject arbitrary file
+      shell:
+        chdir: /extras/tasky
+        cmd: echo 'RUN echo "very sensitive data" > /wizexercise.txt' >> Dockerfile
+    - name: Build Tasky
+      shell:
+        chdir: /extras/tasky
+        cmd: |-
+          docker build -t "{{ ecr_repository_host }}:{{ tasky_sha.stdout }}" .
+          docker tag "{{ ecr_repository_host }}:{{ tasky_sha.stdout }}" "{{ ecr_repository_host }}:latest"
+    - name: Push Tasky into ECR
+      shell: |-
+        docker push "{{ ecr_repository_host }}:{{ tasky_sha.stdout }}"
+        docker push "{{ ecr_repository_host }}:latest"
+
+    - name: Deploy Tasky Helm Chart
+      helm:
+        name: tasky
+        chart_ref: /chart
+        release_namespace: default
+        values:
+          image:
+            repository: "{{ ecr_repository_host }}"
+            tag: "{{ tasky_sha.stdout }}"
+          database:
+            uri: "postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}/{{ db_name }}?sslmode=disable"
+            type: postgresql

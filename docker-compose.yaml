@@ -54,13 +54,50 @@ services:
           --private-key /secrets/db_key \
           --extra-vars @/config/vars.yaml \
           /config/all.yaml
-  test-infra:
+  deploy-app:
+    depends_on:
+      refresh-eks-kubeconfig:
+        condition: service_completed_successfully
+    build:
+      dockerfile: ansible.Dockerfile
+      context: .
+    volumes:
+      - infra-secrets:/secrets
+      - infra-extra-files:/extras
+      - $PWD/config:/config
+      - $PWD/chart:/chart
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TASKY_REPO_URL
+      - TASKY_REPO_VERSION
+      - ANSIBLE_HOST_KEY_CHECKING=false
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        mkdir -p ~/.kube &&
+        cp /secrets/kubeconfig ~/.kube/config &&
+        ansible-playbook \
+          -e ecr_repository_host=$(cat /secrets/ecr_repository_host) \
+          -e ecr_repository_username=$(cat /secrets/ecr_repository_username) \
+          -e ecr_repository_password=$(cat /secrets/ecr_repository_password) \
+          -e tasky_repo="$TASKY_REPO_URL" \
+          -e tasky_version="$TASKY_VERSION" \
+          -e db_user=$(cat /secrets/db_db_user) \
+          -e db_password=$(cat /secrets/db_db_password) \
+          -e db_name=$(cat /secrets/db_name) \
+          -e db_host=$(cat /secrets/db_host) \
+          /config/app.yaml
+  test:
     build:
       dockerfile: bats.Dockerfile
       context: .
     environment:
-      - DB_HOST
-      - DB_USER
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_SESSION_TOKEN
@@ -69,6 +106,7 @@ services:
     volumes:
       - infra-secrets:/secrets
       - $PWD/tests:/tests
+      - /var/run/docker.sock:/var/run/docker.sock
     command:
       - /tests
   terraform-init:
@@ -206,6 +244,9 @@ services:
         echo "$$json" | jq -r '.wiz_interview_test_machine_private_ip.value' >  /secrets/test_machine_private_ip &&
         echo "$$json" | jq -r '.wiz_interview_eks_cluster_name.value' >  /secrets/eks_cluster_name &&
         echo "$$json" | jq -r '.wiz_interview_eks_cluster_autoscaler_role_arn.value' >  /secrets/cluster_autoscaler_role_arn
+        echo "$$json" | jq -r '.wiz_interview_ecr_repository_host.value' >  /secrets/ecr_repository_host &&
+        echo "$$json" | jq -r '.wiz_interview_ecr_repository_username.value' >  /secrets/ecr_repository_username &&
+        echo "$$json" | jq -r '.wiz_interview_ecr_repository_password.value' >  /secrets/ecr_repository_password
   delete-infra-secrets:
     image: bash:5
     volumes:
