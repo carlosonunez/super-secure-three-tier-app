@@ -52,3 +52,16 @@ This will also use Ansible to:
 
 - Install and configure the database,
 - Deploy the application and its related resources into EKS
+
+Finally, it will use [BATS](https://bats-core.readthedocs.io) to test that
+requirements have been met.
+
+## Troubleshooting
+
+### Logging into the database
+
+You can log into the database to troubleshoot app connection issues by running:
+
+```sh
+docker-compose run --rm ssh-into-db
+```
