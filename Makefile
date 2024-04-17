@@ -18,6 +18,7 @@ dry-run: _init
 deploy:
 	$(MAKE) deploy-infra && \
 	$(MAKE) configure && \
+	$(MAKE) deploy-app && \
 	$(MAKE) test
 
 deploy-infra: _init
@@ -35,7 +36,7 @@ test:
 	$(DOCKER_COMPOSE) run --rm test
 
 teardown: _init
-	$(DOCKER_COMPOSE) run --rm terraform destroy && \
+	$(DOCKER_COMPOSE) run --rm terraform destroy --auto-approve=true && \
 	$(DOCKER_COMPOSE) run --rm delete-infra-secrets
 
 _init:

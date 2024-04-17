@@ -23,20 +23,13 @@ This will start the application and its database.
 > 💸 **MONEY WARNING**: This will cost you ~USD $0.33/hr if run during business
 > hours, or ~USD $0.11/hr if you disable AWS Config.
 
-1. `export` the following values into your environment:
-
-- `TERRAFORM_STATE_S3_BUCKET`: The name of the bucket to store Terraform state
-  into.
-- `TERRAFORM_STATE_S3_KEY`: The name of the key within the bucket above to store
-  state into.
-
-2. Log into AWS and ensure the following environment variables are exported:
+1. Log into AWS and ensure the following environment variables are exported:
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_SESSION_TOKEN` (if using AWS STS)
 
-3. Deploy the app:
+2. Deploy the app:
 
 ```sh
 make deploy
